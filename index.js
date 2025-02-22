@@ -14,6 +14,7 @@ const corsOption = {
 app.use(cors(corsOption));
 app.use(express.json());
 const { MongoClient, ServerApiVersion } = require("mongodb");
+const { ObjectId } = require("mongodb");
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@ratul.gtek0.mongodb.net/?retryWrites=true&w=majority&appName=Ratul`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -34,9 +35,24 @@ async function run() {
       res.send("This is taskify server!");
     });
     app.post("/tasks", async (req, res) => {
-      const data = req;
+      const task = req.body;
+      console.log(task);
+      const result = await tasksCollection.insertOne(task);
+      res.send(result);
     });
 
+    app.get("/tasks", async (req, res) => {
+      const result = await tasksCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.delete("/task/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      console.log(query);
+      const result = await tasksCollection.deleteOne(query);
+      res.send(result);
+    });
     app.post("/users", async (req, res) => {
       const { email, name } = req.body;
       const user = { email, name };
@@ -50,6 +66,20 @@ async function run() {
 
     app.get("/users", async (req, res) => {
       const result = await usersCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.patch("/task/:id", async (req, res) => {
+      const id = req.params.id;
+      const { title } = req.body;
+      console.log(title, id);
+      const query = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          title: title,
+        },
+      };
+      const result = await tasksCollection.updateOne(query, updateDoc);
       res.send(result);
     });
   } finally {
