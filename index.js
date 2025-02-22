@@ -1,12 +1,18 @@
 require("dotenv").config();
 const express = require("express");
-
+const cors = require("cors");
 const app = express();
 const PORT = process.env.PORT || 9000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}.`);
 });
 
+const corsOption = {
+  origin: ["http://localhost:5173", "http://localhost:5174"],
+};
+
+app.use(cors(corsOption));
+app.use(express.json());
 const { MongoClient, ServerApiVersion } = require("mongodb");
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@ratul.gtek0.mongodb.net/?retryWrites=true&w=majority&appName=Ratul`;
 
@@ -21,16 +27,23 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-    // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
-    // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
-    console.log(
-      "Pinged your deployment. You successfully connected to MongoDB!"
-    );
+    const database = client.db("taskify");
+    const usersCollection = database.collection("users");
+    const tasksCollection = database.collection("tasks");
+    app.get("/", (req, res) => {
+      res.send("This is taskify server!");
+    });
+    app.post("/tasks", async (req, res) => {
+      const data = req;
+    });
+
+    app.post("/users", async (req, res) => {
+      const data = req;
+      console.log(data);
+    });
   } finally {
     // Ensures that the client will close when you finish/error
-    await client.close();
+    // await client.close();
   }
 }
 run().catch(console.dir);
