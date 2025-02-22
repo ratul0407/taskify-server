@@ -8,7 +8,11 @@ app.listen(PORT, () => {
 });
 
 const corsOption = {
-  origin: ["http://localhost:5173", "http://localhost:5174"],
+  origin: [
+    "http://localhost:5173",
+    "http://localhost:5174",
+    "https://taskify-client-sooty.vercel.app",
+  ],
 };
 
 app.use(cors(corsOption));
