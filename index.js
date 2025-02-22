@@ -38,8 +38,19 @@ async function run() {
     });
 
     app.post("/users", async (req, res) => {
-      const data = req;
-      console.log(data);
+      const { email, name } = req.body;
+      const user = { email, name };
+      const query = { email: email };
+      const isExist = await usersCollection.findOne(query);
+      console.log(isExist);
+      if (isExist) return;
+      const result = await usersCollection.insertOne(user);
+      res.send(result);
+    });
+
+    app.get("/users", async (req, res) => {
+      const result = await usersCollection.find().toArray();
+      res.send(result);
     });
   } finally {
     // Ensures that the client will close when you finish/error
