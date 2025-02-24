@@ -4,6 +4,7 @@ const http = require("http");
 const cors = require("cors");
 const { Server } = require("socket.io");
 const { connectDB, getDb } = require("./db");
+const { ObjectId } = require("mongodb");
 
 const app = express();
 const server = http.createServer(app);
@@ -26,6 +27,7 @@ app.use(express.json());
 
 let tasksCollection;
 let usersCollection;
+
 // **Ensure DB Connection Before Starting Server**
 async function startServer() {
   await connectDB(); // Wait for DB connection
@@ -114,7 +116,25 @@ io.on("connection", (socket) => {
   });
 
   // **Delete Tasks**
-  socket.on("task-delete", async (id) => {});
+  socket.on("task-delete", async ({ id, user }) => {
+    const query = { _id: new ObjectId(id) };
+    const result = await tasksCollection.deleteOne(query);
+    const tasks = await tasksCollection.find({ addedBy: user }).toArray();
+    socket.emit("updatedTasks", tasks);
+  });
+
+  //** task update */
+  socket.on("task-update", async ({ id, title, user }) => {
+    const query = { _id: new ObjectId(id) };
+    const updatedDoc = {
+      $set: {
+        title: title,
+      },
+    };
+    const result = await tasksCollection.updateOne(query, updatedDoc);
+    const tasks = await tasksCollection.find({ addedBy: user }).toArray();
+    socket.emit("updatedTasks", tasks);
+  });
 
   socket.on("disconnect", () => {
     console.log("A user has disconnected");
