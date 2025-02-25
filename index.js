@@ -157,22 +157,26 @@ io.on("connection", (socket) => {
     const result = await tasksCollection.updateOne(query, updatedDoc);
     const task = await tasksCollection.findOne(query);
     console.log(task);
-    socket.emit("updatedTasks", task);
+    socket.emit("updated-tasks", task);
   });
 
   //reorder items
-  socket.on("reorder items", async (newOrder) => {
-    console.log(newOrder);
-    const newTasks = newOrder.map((task) => ({
-      ...task,
-      _id: new ObjectId(task._id),
-    }));
-    console.log(newTasks);
+  socket.on("reorder-items", async ({ email, updatedItems }) => {
     try {
-      const deleteOldOnes = await tasksCollection.deleteMany({});
-      const insertNewOnes = await tasksCollection.insertMany(newTasks);
+      for (const task of updatedItems) {
+        const query = { _id: new ObjectId(task._id), user: email };
+        const update = { $set: { order: task.order } };
+        await tasksCollection.updateOne(query, update);
+      }
+
+      // Fetch and emit only the updated user's tasks
+      const updatedTasks = await tasksCollection
+        .find({ user: email })
+        .sort({ order: 1 })
+        .toArray();
+      socket.emit("updated-tasks", { email, tasks: updatedTasks });
     } catch (err) {
-      console.log(err);
+      console.error("Error updating task order:", err);
     }
   });
 
