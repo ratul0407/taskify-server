@@ -114,10 +114,10 @@ io.on("connection", (socket) => {
 
   // **Delete Tasks**
   socket.on("task-delete", async ({ id }) => {
-    const query = { _id: new ObjectId(id) };
+    const query = { _id: id };
+    console.log(query);
     const deletedTask = await tasksCollection.findOne(query);
     const result = await tasksCollection.deleteOne(query);
-    console.log(deletedTask);
     socket.emit("task-deleted", deletedTask);
   });
 
