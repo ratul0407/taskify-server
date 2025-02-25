@@ -123,7 +123,7 @@ io.on("connection", (socket) => {
 
   //** task update */
   socket.on("task-update", async ({ id, title }) => {
-    const query = { _id: new ObjectId(id) };
+    const query = { _id: id };
     const updatedDoc = {
       $set: {
         title: title,
