@@ -106,7 +106,7 @@ io.on("connection", (socket) => {
       const tasks = await tasksCollection
         .find({ addedBy: userEmail })
         .toArray();
-      socket.emit("updatedTasks", tasks); // Emit only to the requesting client
+      // socket.emit("updatedTasks", tasks); // Emit only to the requesting client
       socket.emit("userTasks", tasks);
     } catch (err) {
       console.error("Error fetching tasks:", err);
@@ -141,7 +141,8 @@ io.on("connection", (socket) => {
   socket.on("reorder items", async (newOrder) => {
     console.log(newOrder);
     try {
-      console.log(newOrder);
+      const deleteOldOnes = await tasksCollection.deleteMany({});
+      const insertNewOnes = await tasksCollection.insertMany(newOrder);
     } catch (err) {
       console.log(err);
     }
