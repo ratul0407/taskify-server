@@ -114,7 +114,7 @@ io.on("connection", (socket) => {
 
   // **Delete Tasks**
   socket.on("task-delete", async ({ id }) => {
-    const query = { _id: id };
+    const query = { _id: new ObjectId(id) };
     console.log(query);
     const deletedTask = await tasksCollection.findOne(query);
     const result = await tasksCollection.deleteOne(query);
@@ -123,7 +123,7 @@ io.on("connection", (socket) => {
 
   //** task update */
   socket.on("task-update", async ({ id, title }) => {
-    const query = { _id: id };
+    const query = { _id: new ObjectId(id) };
     const updatedDoc = {
       $set: {
         title: title,
@@ -139,9 +139,14 @@ io.on("connection", (socket) => {
   //reorder items
   socket.on("reorder items", async (newOrder) => {
     console.log(newOrder);
+    const newTasks = newOrder.map((task) => ({
+      ...task,
+      _id: new ObjectId(task._id),
+    }));
+    console.log(newTasks);
     try {
       const deleteOldOnes = await tasksCollection.deleteMany({});
-      const insertNewOnes = await tasksCollection.insertMany(newOrder);
+      const insertNewOnes = await tasksCollection.insertMany(newTasks);
     } catch (err) {
       console.log(err);
     }
