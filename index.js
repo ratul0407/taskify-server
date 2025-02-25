@@ -75,10 +75,7 @@ io.on("connection", (socket) => {
     try {
       const result = await tasksCollection.insertOne(task);
       const newTask = { _id: result.insertedId, ...task };
-
-      // Fetch updated task list and emit to all clients
-      const updatedTasks = await tasksCollection.find().toArray();
-      io.emit("updatedTasks", updatedTasks);
+      io.emit("newTask", newTask);
     } catch (error) {
       console.error("Error inserting task:", error);
     }
@@ -110,32 +107,45 @@ io.on("connection", (socket) => {
         .find({ addedBy: userEmail })
         .toArray();
       socket.emit("updatedTasks", tasks); // Emit only to the requesting client
+      socket.emit("userTasks", tasks);
     } catch (err) {
       console.error("Error fetching tasks:", err);
     }
   });
 
   // **Delete Tasks**
-  socket.on("task-delete", async ({ id, user }) => {
+  socket.on("task-delete", async ({ id }) => {
     const query = { _id: new ObjectId(id) };
+    const deletedTask = await tasksCollection.findOne(query);
     const result = await tasksCollection.deleteOne(query);
-    const tasks = await tasksCollection.find({ addedBy: user }).toArray();
-    socket.emit("updatedTasks", tasks);
+    console.log(deletedTask);
+    socket.emit("task-deleted", deletedTask);
   });
 
   //** task update */
-  socket.on("task-update", async ({ id, title, user }) => {
+  socket.on("task-update", async ({ id, title }) => {
     const query = { _id: new ObjectId(id) };
     const updatedDoc = {
       $set: {
         title: title,
       },
     };
+
     const result = await tasksCollection.updateOne(query, updatedDoc);
-    const tasks = await tasksCollection.find({ addedBy: user }).toArray();
-    socket.emit("updatedTasks", tasks);
+    const task = await tasksCollection.findOne(query);
+    console.log(task);
+    socket.emit("updatedTasks", task);
   });
 
+  //reorder items
+  socket.on("reorder items", async (newOrder) => {
+    console.log(newOrder);
+    try {
+      console.log(newOrder);
+    } catch (err) {
+      console.log(err);
+    }
+  });
   socket.on("disconnect", () => {
     console.log("A user has disconnected");
   });
