@@ -58,11 +58,9 @@ app.get("/tasks", async (req, res) => {
 app.get("/", (req, res) => {
   res.send("Welcome to taskify server!");
 });
-console.log(tasksCollection);
+
 // **Socket.io Events**
 io.on("connection", (socket) => {
-  console.log("A user has connected");
-
   // Ensure tasksCollection is initialized before handling events
   if (!tasksCollection) {
     console.error("Database not initialized yet");
@@ -116,7 +114,7 @@ io.on("connection", (socket) => {
   // **Delete Tasks**
   socket.on("task-delete", async ({ id }) => {
     const query = { _id: new ObjectId(id) };
-    console.log(query);
+
     const deletedTask = await tasksCollection.findOne(query);
     const result = await tasksCollection.deleteOne(query);
     socket.emit("task-deleted", deletedTask);
@@ -133,7 +131,7 @@ io.on("connection", (socket) => {
 
     const result = await tasksCollection.updateOne(query, updatedDoc);
     const task = await tasksCollection.findOne(query);
-    console.log(task);
+
     socket.emit("updated-tasks", task);
   });
 
