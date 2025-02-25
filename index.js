@@ -11,11 +11,7 @@ const server = http.createServer(app);
 const PORT = process.env.PORT || 9000;
 
 const corsOption = {
-  origin: [
-    "http://localhost:5173",
-    "http://localhost:5174",
-    "https://taskify-client-sooty.vercel.app",
-  ],
+  origin: "*",
 };
 
 const io = new Server(server, {
