@@ -55,6 +55,9 @@ app.get("/tasks", async (req, res) => {
   }
 });
 
+app.get("/", (req, res) => {
+  res.send("Welcome to taskify server!");
+});
 console.log(tasksCollection);
 // **Socket.io Events**
 io.on("connection", (socket) => {
