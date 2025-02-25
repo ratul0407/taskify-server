@@ -161,36 +161,40 @@ io.on("connection", (socket) => {
   });
 
   //reorder items
+  // Reorder items
   socket.on("reorder-items", async ({ email, updatedItems }) => {
     try {
       for (const task of updatedItems) {
-        const query = { _id: new ObjectId(task._id), user: email };
+        const query = { _id: new ObjectId(task._id), addedBy: email };
         const update = { $set: { order: task.order } };
         await tasksCollection.updateOne(query, update);
       }
 
       // Fetch and emit only the updated user's tasks
       const updatedTasks = await tasksCollection
-        .find({ user: email })
+        .find({ addedBy: email })
         .sort({ order: 1 })
         .toArray();
-      socket.emit("updated-tasks", { email, tasks: updatedTasks });
+      socket.emit("reordered-tasks", { updatedTasks });
     } catch (err) {
       console.error("Error updating task order:", err);
     }
   });
 
-  //update task category
+  // Update task category
   socket.on("update-task-category", async (task) => {
     const query = { _id: new ObjectId(task._id) };
     const updatedDoc = {
       $set: {
         category: task.category,
+        order: task.order, // Ensure order is updated when moving between columns
       },
     };
     try {
       const result = await tasksCollection.updateOne(query, updatedDoc);
-    } catch (err) {}
+    } catch (err) {
+      console.error("Error updating task category:", err);
+    }
   });
   socket.on("disconnect", () => {
     console.log("A user has disconnected");
