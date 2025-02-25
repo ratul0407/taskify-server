@@ -11,7 +11,7 @@ const server = http.createServer(app);
 const PORT = process.env.PORT || 9000;
 
 const corsOption = {
-  origin: "*",
+  origin: ["http://localhost:5173", "https://taskify-client-sooty.vercel.app"],
 };
 
 const io = new Server(server, {
@@ -106,29 +106,6 @@ io.on("connection", (socket) => {
         .find({ addedBy: userEmail })
         .toArray();
 
-      const groupedData = {
-        todos: [],
-        inProgress: [],
-        done: [],
-      };
-
-      tasks.forEach((doc) => {
-        console.log(doc.category);
-        switch (doc.category) {
-          case "todos":
-            console.log(doc);
-            groupedData.todos.push(doc);
-            break;
-          case "in-progress":
-            groupedData.inProgress.push(doc);
-            break;
-          case "done":
-            groupedData.done.push(doc);
-            break;
-          default:
-            console.warn(`Unknown category: ${doc.category}`);
-        }
-      });
       // socket.emit("updatedTasks", tasks); // Emit only to the requesting client
       socket.emit("userTasks", tasks);
     } catch (err) {
