@@ -105,6 +105,30 @@ io.on("connection", (socket) => {
       const tasks = await tasksCollection
         .find({ addedBy: userEmail })
         .toArray();
+
+      const groupedData = {
+        todos: [],
+        inProgress: [],
+        done: [],
+      };
+
+      tasks.forEach((doc) => {
+        console.log(doc.category);
+        switch (doc.category) {
+          case "todos":
+            console.log(doc);
+            groupedData.todos.push(doc);
+            break;
+          case "in-progress":
+            groupedData.inProgress.push(doc);
+            break;
+          case "done":
+            groupedData.done.push(doc);
+            break;
+          default:
+            console.warn(`Unknown category: ${doc.category}`);
+        }
+      });
       // socket.emit("updatedTasks", tasks); // Emit only to the requesting client
       socket.emit("userTasks", tasks);
     } catch (err) {
@@ -150,6 +174,19 @@ io.on("connection", (socket) => {
     } catch (err) {
       console.log(err);
     }
+  });
+
+  //update task category
+  socket.on("update-task-category", async (task) => {
+    const query = { _id: new ObjectId(task._id) };
+    const updatedDoc = {
+      $set: {
+        category: task.category,
+      },
+    };
+    try {
+      const result = await tasksCollection.updateOne(query, updatedDoc);
+    } catch (err) {}
   });
   socket.on("disconnect", () => {
     console.log("A user has disconnected");
